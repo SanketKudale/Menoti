@@ -11,10 +11,9 @@ class Menoti {
       FlutterLocalNotificationsPlugin();
   AppLinks? _appLinks;
 
-  /// Initialize notification, deep linking, and geofencing
   Future<void> initialize({
     required Function(String deepLink) onDeepLink,
-    required Function(String notificationData) onNotification,
+    required Function(RemoteMessage notificationData) onNotification,
     required Function(String regionId, bool entered) onGeofenceEvent,
   }) async {
     await _initializeFirebaseMessaging(onNotification);
@@ -23,15 +22,13 @@ class Menoti {
     await _initializeGeofencing(onGeofenceEvent);
   }
 
-  /// Initialize Firebase Messaging for notifications
   Future<void> _initializeFirebaseMessaging(
-      Function(String notificationData) onNotification) async {
+      Function(RemoteMessage notificationData) onNotification) async {
     await _firebaseMessaging.requestPermission();
 
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       if (message.notification != null) {
-        final notificationData = message.data.toString();
-        onNotification(notificationData);
+        onNotification(message);
         _showLocalNotification(
           title: message.notification?.title ?? 'Notification',
           body: message.notification?.body ?? 'No content',
@@ -41,12 +38,11 @@ class Menoti {
 
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
       if (message.data.isNotEmpty) {
-        onNotification(message.data.toString());
+        onNotification(message);
       }
     });
   }
 
-  /// Initialize local notifications
   Future<void> _initializeLocalNotifications() async {
     const android = AndroidInitializationSettings('@mipmap/ic_launcher');
     const iOS = DarwinInitializationSettings();
@@ -56,7 +52,6 @@ class Menoti {
     await _flutterLocalNotificationsPlugin.initialize(initializationSettings);
   }
 
-  /// Show a local notification
   Future<void> _showLocalNotification({
     required String title,
     required String body,
@@ -80,7 +75,6 @@ class Menoti {
     );
   }
 
-  /// Initialize deep linking with `app_links`
   Future<void> _initializeDeepLinking(
       Function(String deepLink) onDeepLink) async {
     _appLinks = AppLinks();
@@ -96,7 +90,6 @@ class Menoti {
     });
   }
 
-  /// Initialize geofencing with `geofencing_api`
   Future<void> _initializeGeofencing(
       Function(String regionId, bool entered) onGeofenceEvent) async {
     Geofencing.instance.setup(
