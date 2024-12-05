@@ -7,29 +7,34 @@ import 'package:geofencing_api/geofencing_api.dart';
 
 class Menoti {
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
-  final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
-
+  final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
   AppLinks? _appLinks;
 
+  /// Initialize notification, deep linking, and geofencing
   Future<void> initialize({
-    required Function (String deepLink) onDeepLink,
-    required Function (String notificationData) onNotification,
-    required Function (String regionId, bool entered) onGeofenceEvent
-}) async {
-
+    required Function(String deepLink) onDeepLink,
+    required Function(String notificationData) onNotification,
+    required Function(String regionId, bool entered) onGeofenceEvent,
+  }) async {
+    await _initializeFirebaseMessaging(onNotification);
+    await _initializeLocalNotifications();
+    await _initializeDeepLinking(onDeepLink);
+    await _initializeGeofencing(onGeofenceEvent);
   }
 
+  /// Initialize Firebase Messaging for notifications
   Future<void> _initializeFirebaseMessaging(
       Function(String notificationData) onNotification) async {
-    _firebaseMessaging.requestPermission();
+    await _firebaseMessaging.requestPermission();
 
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       if (message.notification != null) {
         final notificationData = message.data.toString();
         onNotification(notificationData);
         _showLocalNotification(
-          title: message.notification?.title ?? '',
-          body: message.notification?.body ?? '',
+          title: message.notification?.title ?? 'Notification',
+          body: message.notification?.body ?? 'No content',
         );
       }
     });
@@ -46,7 +51,7 @@ class Menoti {
     const android = AndroidInitializationSettings('@mipmap/ic_launcher');
     const iOS = DarwinInitializationSettings();
     const initializationSettings =
-    InitializationSettings(android: android, iOS: iOS);
+        InitializationSettings(android: android, iOS: iOS);
 
     await _flutterLocalNotificationsPlugin.initialize(initializationSettings);
   }
@@ -57,8 +62,8 @@ class Menoti {
     required String body,
   }) async {
     const androidDetails = AndroidNotificationDetails(
-      'channel_id',
-      'channel_name',
+      'menoti_#825',
+      'Menoti',
       importance: Importance.high,
     );
     const iOSDetails = DarwinNotificationDetails();
@@ -76,9 +81,10 @@ class Menoti {
   }
 
   /// Initialize deep linking with `app_links`
-  Future<void> _initializeDeepLinking(Function(String deepLink) onDeepLink) async {
+  Future<void> _initializeDeepLinking(
+      Function(String deepLink) onDeepLink) async {
     _appLinks = AppLinks();
-    final initialLink = await _appLinks?.getInitialAppLink();
+    final initialLink = await _appLinks?.getInitialLink();
     if (initialLink != null) {
       onDeepLink(initialLink.toString());
     }
@@ -90,24 +96,82 @@ class Menoti {
     });
   }
 
-  /// Initialize geofencing
+  /// Initialize geofencing with `geofencing_api`
   Future<void> _initializeGeofencing(
       Function(String regionId, bool entered) onGeofenceEvent) async {
-    Geofencing.initialize();
-    GeofenceRegion region = GeofenceRegion(
-      id: 'test_geofence',
-      latitude: 37.7749, // Example latitude
-      longitude: -122.4194, // Example longitude
-      radius: 100, // Radius in meters
+    Geofencing.instance.setup(
+      interval: 5000,
+      accuracy: 100,
+      statusChangeDelay: 10000,
+      allowsMockLocation: false,
+      printsDebugLog: true,
     );
 
-    Geofen  cingAPI.registerGeofence(region, (GeofenceEvent event) {
-      if (event == GeofenceEvent.enter) {
-        onGeofenceEvent(region.id, true);
-      } else if (event == GeofenceEvent.exit) {
-        onGeofenceEvent(region.id, false);
+    final Set<GeofenceRegion> _regions = {
+      GeofenceRegion.circular(
+        id: 'circular_region',
+        data: {
+          'name': 'National Museum of Korea',
+        },
+        center: const LatLng(37.523085, 126.979619),
+        radius: 250,
+        loiteringDelay: 60 * 1000,
+      ),
+    };
+
+    Geofencing.instance.addGeofenceStatusChangedListener(
+        (GeofenceRegion geofenceRegion, GeofenceStatus geofenceStatus,
+            Location location) {
+      final String regionId = geofenceRegion.id;
+      switch (geofenceStatus) {
+        case GeofenceStatus.enter:
+          onGeofenceEvent(regionId, true);
+          break;
+        case GeofenceStatus.exit:
+          onGeofenceEvent(regionId, false);
+          break;
+        case GeofenceStatus.dwell:
+          break;
       }
+      return Future.value();
     });
+    Geofencing.instance.addGeofenceErrorCallbackListener(_onGeofenceError);
+
+    await Geofencing.instance.start(regions: _regions);
   }
 
+  void _onGeofenceError(Object error, StackTrace stackTrace) {
+    // print('error: $error\n$stackTrace');
+  }
+
+  /*void pauseGeofencing() {
+    Geofencing.instance.pause();
+  }
+
+  void resumeGeofencing() {
+    Geofencing.instance.resume();
+  }
+
+  void addRegions() {
+    Geofencing.instance.addRegion(GeofenceRegion);
+    Geofencing.instance.addRegions(Set<GeofenceRegion>);
+  }
+
+  void removeRegions() {
+    Geofencing.instance.removeRegion(GeofenceRegion);
+    Geofencing.instance.removeRegions(Set<GeofenceRegion>);
+    Geofencing.instance.removeRegionById(String);
+    Geofencing.instance.clearAllRegions();
+  }
+
+  void stopGeofencing() async {
+    Geofencing.instance
+        .removeGeofenceStatusChangedListener(_onGeofenceStatusChanged);
+    Geofencing.instance.removeGeofenceErrorCallbackListener(_onGeofenceError);
+    Geofencing.instance.removeLocationChangedListener(LocationChanged);
+    Geofencing.instance.removeLocationServicesStatusChangedListener(
+        LocationServicesStatusChanged);
+
+    await Geofencing.instance.stop(keepsRegions: true);
+  }*/
 }

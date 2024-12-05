@@ -77,3 +77,19 @@
 
 ## Usage
 
+   ```dart
+   final menoti = Menoti();
+
+   await menoti.initialize(
+    onDeepLink: (deepLink) {
+      print('Deep Link: $deepLink');
+    },
+    onNotification: (notificationData) {
+      print('Notification Data: $notificationData');
+    },
+    onGeofenceEvent: (regionId, entered) {
+      print('Geofence Event: $regionId, Entered: $entered');
+    },
+   );
+   ```
+
