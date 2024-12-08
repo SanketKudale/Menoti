@@ -13,3 +13,5 @@ Notification Tap Added
 Documentation Updates
 ## 1.0.3
 Documentation Updates
+## 1.0.4
+Documentation Updates
