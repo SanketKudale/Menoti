@@ -91,22 +91,6 @@ class Menoti {
     return distance <= geofenceRadiusInMeters;
   }
 
-  Future<Position> _getUserLocation() async {
-    LocationData locationData = await _location.getLocation();
-    return Position(
-      latitude: locationData.latitude!,
-      longitude: locationData.longitude!,
-      timestamp: DateTime.now(),
-      accuracy: 50,
-      altitude: 0.0,
-      altitudeAccuracy: 0.0,
-      heading: 0,
-      headingAccuracy: 0,
-      speed: 0,
-      speedAccuracy: 0,
-    );
-  }
-
   Future<void> _initializeGeofencing(
       List<Coordinate> coordinates,
       Function(
