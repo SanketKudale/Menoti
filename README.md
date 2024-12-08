@@ -1,7 +1,6 @@
 ## Features
 
  - Notification Management
- - Deep Linking
  - Geofencing
 
 ## Getting started
@@ -57,7 +56,7 @@
                 </intent-filter>
             </receiver>
          ```
-
+   
 - **IOS**
    Open the ```ios/Runner/Info.plist``` file and declare description within the <dict> tag.
         
@@ -81,9 +80,6 @@
    final menoti = Menoti();
 
    await menoti.initialize(
-    onDeepLink: (deepLink) {
-      print('Deep Link: $deepLink');
-    },
     onNotification: (RemoteMessage notificationData) {
       print('Notification Data: $notificationData');
     },
