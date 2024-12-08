@@ -9,3 +9,5 @@ All above versions are retracted
 Major Release
 ## 1.0.1
 Notification Tap Added
+## 1.0.2
+Documentation Updates

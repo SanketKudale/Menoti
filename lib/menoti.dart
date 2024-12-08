@@ -150,18 +150,26 @@ class Menoti {
 }
 
 class Coordinate {
+  /// ID of the Geofence.
   final String id;
+  /// Name of the Geofence.
   final String name;
+  /// Latitude of the Geofence center.
   final double latitude;
+  /// Longitude of the Geofence center.
   final double longitude;
+  /// Radius of Feofence
   final double radius;
 
   Coordinate(this.id, this.name, this.latitude, this.longitude, this.radius);
 }
 
 class MenotiNotification {
+  /// Notification Title.
   final String title;
+  /// Notification Body.
   final String body;
+  /// Extra Data.
   final Map<String, dynamic> data;
 
   const MenotiNotification(
