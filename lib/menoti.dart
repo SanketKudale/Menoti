@@ -1,7 +1,6 @@
 library menoti;
 
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:location/location.dart';
@@ -9,15 +8,15 @@ import 'package:location/location.dart';
 class Menoti {
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
   final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin =
-  FlutterLocalNotificationsPlugin();
+      FlutterLocalNotificationsPlugin();
 
   final Location _location = Location();
 
   Future<void> initialize(
       {required Function(String deepLink) onDeepLink,
-        required Function(RemoteMessage notificationData) onNotification,
-        required Function(String regionId, bool entered) onGeofenceEvent,
-        required List<Coordinate> geofenceCoordinates}) async {
+      required Function(RemoteMessage notificationData) onNotification,
+      required Function(String regionId, bool entered) onGeofenceEvent,
+      required List<Coordinate> geofenceCoordinates}) async {
     await _initializeFirebaseMessaging(onNotification);
     await _initializeLocalNotifications();
     await _initializeGeofencing(geofenceCoordinates, onGeofenceEvent);
@@ -48,7 +47,7 @@ class Menoti {
     const android = AndroidInitializationSettings('@mipmap/ic_launcher');
     const iOS = DarwinInitializationSettings();
     const initializationSettings =
-    InitializationSettings(android: android, iOS: iOS);
+        InitializationSettings(android: android, iOS: iOS);
 
     await _flutterLocalNotificationsPlugin.initialize(initializationSettings);
   }
@@ -77,11 +76,11 @@ class Menoti {
   }
 
   bool _isWithinGeofence(
-      Position userPosition,
-      double geofenceLatitude,
-      double geofenceLongitude,
-      double geofenceRadiusInMeters,
-      ) {
+    Position userPosition,
+    double geofenceLatitude,
+    double geofenceLongitude,
+    double geofenceRadiusInMeters,
+  ) {
     double distance = Geolocator.distanceBetween(
       userPosition.latitude,
       userPosition.longitude,
@@ -94,9 +93,9 @@ class Menoti {
   Future<void> _initializeGeofencing(
       List<Coordinate> coordinates,
       Function(
-          String regionId,
-          bool entered,
-          ) onGeofenceEvent) async {
+        String regionId,
+        bool entered,
+      ) onGeofenceEvent) async {
     _location.enableBackgroundMode(enable: true);
 
     _location.onLocationChanged.listen((LocationData locationData) {
