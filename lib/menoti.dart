@@ -3,23 +3,26 @@ library menoti;
 import 'package:app_links/app_links.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:geofencing_api/geofencing_api.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:location/location.dart';
 
 class Menoti {
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
   final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin =
-      FlutterLocalNotificationsPlugin();
+  FlutterLocalNotificationsPlugin();
   AppLinks? _appLinks;
 
-  Future<void> initialize({
-    required Function(String deepLink) onDeepLink,
-    required Function(RemoteMessage notificationData) onNotification,
-    required Function(String regionId, bool entered) onGeofenceEvent,
-  }) async {
+  final Location _location = Location();
+
+  Future<void> initialize(
+      {required Function(String deepLink) onDeepLink,
+        required Function(RemoteMessage notificationData) onNotification,
+        required Function(String regionId, bool entered) onGeofenceEvent,
+        required List<Coordinate> geofenceCoordinates}) async {
     await _initializeFirebaseMessaging(onNotification);
     await _initializeLocalNotifications();
     await _initializeDeepLinking(onDeepLink);
-    await _initializeGeofencing(onGeofenceEvent);
+    await _initializeGeofencing(geofenceCoordinates, onGeofenceEvent);
   }
 
   Future<void> _initializeFirebaseMessaging(
@@ -47,7 +50,7 @@ class Menoti {
     const android = AndroidInitializationSettings('@mipmap/ic_launcher');
     const iOS = DarwinInitializationSettings();
     const initializationSettings =
-        InitializationSettings(android: android, iOS: iOS);
+    InitializationSettings(android: android, iOS: iOS);
 
     await _flutterLocalNotificationsPlugin.initialize(initializationSettings);
   }
@@ -75,6 +78,37 @@ class Menoti {
     );
   }
 
+  bool _isWithinGeofence(
+      Position userPosition,
+      double geofenceLatitude,
+      double geofenceLongitude,
+      double geofenceRadiusInMeters,
+      ) {
+    double distance = Geolocator.distanceBetween(
+      userPosition.latitude,
+      userPosition.longitude,
+      geofenceLatitude,
+      geofenceLongitude,
+    );
+    return distance <= geofenceRadiusInMeters;
+  }
+
+  Future<Position> _getUserLocation() async {
+    LocationData locationData = await _location.getLocation();
+    return Position(
+      latitude: locationData.latitude!,
+      longitude: locationData.longitude!,
+      timestamp: DateTime.now(),
+      accuracy: 50,
+      altitude: 0.0,
+      altitudeAccuracy: 0.0,
+      heading: 0,
+      headingAccuracy: 0,
+      speed: 0,
+      speedAccuracy: 0,
+    );
+  }
+
   Future<void> _initializeDeepLinking(
       Function(String deepLink) onDeepLink) async {
     _appLinks = AppLinks();
@@ -91,80 +125,45 @@ class Menoti {
   }
 
   Future<void> _initializeGeofencing(
-      Function(String regionId, bool entered) onGeofenceEvent) async {
-    Geofencing.instance.setup(
-      interval: 5000,
-      accuracy: 100,
-      statusChangeDelay: 10000,
-      allowsMockLocation: false,
-      printsDebugLog: true,
-    );
+      List<Coordinate> coordinates,
+      Function(
+          String regionId,
+          bool entered,
+          ) onGeofenceEvent) async {
+    _location.enableBackgroundMode(enable: true);
 
-    final Set<GeofenceRegion> _regions = {
-      GeofenceRegion.circular(
-        id: 'circular_region',
-        data: {
-          'name': 'National Museum of Korea',
-        },
-        center: const LatLng(37.523085, 126.979619),
-        radius: 250,
-        loiteringDelay: 60 * 1000,
-      ),
-    };
+    _location.onLocationChanged.listen((LocationData locationData) {
+      Position currentPosition = Position(
+        latitude: locationData.latitude!,
+        longitude: locationData.longitude!,
+        timestamp: DateTime.now(),
+        accuracy: 50,
+        altitude: 0.0,
+        altitudeAccuracy: 0.0,
+        heading: 0,
+        headingAccuracy: 0,
+        speed: 0,
+        speedAccuracy: 0,
+      );
 
-    Geofencing.instance.addGeofenceStatusChangedListener(
-        (GeofenceRegion geofenceRegion, GeofenceStatus geofenceStatus,
-            Location location) {
-      final String regionId = geofenceRegion.id;
-      switch (geofenceStatus) {
-        case GeofenceStatus.enter:
-          onGeofenceEvent(regionId, true);
-          break;
-        case GeofenceStatus.exit:
-          onGeofenceEvent(regionId, false);
-          break;
-        case GeofenceStatus.dwell:
-          break;
+      for (Coordinate coordinate in coordinates) {
+        if (_isWithinGeofence(currentPosition, coordinate.latitude,
+            coordinate.longitude, coordinate.radius)) {
+          onGeofenceEvent(coordinate.id, true);
+        } else {
+          onGeofenceEvent(coordinate.id, false);
+        }
       }
-      return Future.value();
     });
-    Geofencing.instance.addGeofenceErrorCallbackListener(_onGeofenceError);
-
-    await Geofencing.instance.start(regions: _regions);
   }
+}
 
-  void _onGeofenceError(Object error, StackTrace stackTrace) {
-    // print('error: $error\n$stackTrace');
-  }
+class Coordinate {
+  final String id;
+  final String name;
+  final double latitude;
+  final double longitude;
+  final double radius;
 
-  /*void pauseGeofencing() {
-    Geofencing.instance.pause();
-  }
-
-  void resumeGeofencing() {
-    Geofencing.instance.resume();
-  }
-
-  void addRegions() {
-    Geofencing.instance.addRegion(GeofenceRegion);
-    Geofencing.instance.addRegions(Set<GeofenceRegion>);
-  }
-
-  void removeRegions() {
-    Geofencing.instance.removeRegion(GeofenceRegion);
-    Geofencing.instance.removeRegions(Set<GeofenceRegion>);
-    Geofencing.instance.removeRegionById(String);
-    Geofencing.instance.clearAllRegions();
-  }
-
-  void stopGeofencing() async {
-    Geofencing.instance
-        .removeGeofenceStatusChangedListener(_onGeofenceStatusChanged);
-    Geofencing.instance.removeGeofenceErrorCallbackListener(_onGeofenceError);
-    Geofencing.instance.removeLocationChangedListener(LocationChanged);
-    Geofencing.instance.removeLocationServicesStatusChangedListener(
-        LocationServicesStatusChanged);
-
-    await Geofencing.instance.stop(keepsRegions: true);
-  }*/
+  Coordinate(this.id, this.name, this.latitude, this.longitude, this.radius);
 }

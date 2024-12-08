@@ -84,7 +84,7 @@
     onDeepLink: (deepLink) {
       print('Deep Link: $deepLink');
     },
-    onNotification: (notificationData) {
+    onNotification: (RemoteMessage notificationData) {
       print('Notification Data: $notificationData');
     },
     onGeofenceEvent: (regionId, entered) {
