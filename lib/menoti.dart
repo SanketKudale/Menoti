@@ -1,6 +1,5 @@
 library menoti;
 
-import 'package:app_links/app_links.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -11,7 +10,6 @@ class Menoti {
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
   final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin =
   FlutterLocalNotificationsPlugin();
-  AppLinks? _appLinks;
 
   final Location _location = Location();
 
@@ -22,7 +20,6 @@ class Menoti {
         required List<Coordinate> geofenceCoordinates}) async {
     await _initializeFirebaseMessaging(onNotification);
     await _initializeLocalNotifications();
-    await _initializeDeepLinking(onDeepLink);
     await _initializeGeofencing(geofenceCoordinates, onGeofenceEvent);
   }
 
@@ -108,22 +105,6 @@ class Menoti {
       speed: 0,
       speedAccuracy: 0,
     );
-  }
-
-  Future<void> _initializeDeepLinking(
-      Function(String deepLink) onDeepLink) async {
-    _appLinks = AppLinks();
-    final initialLink = await _appLinks?.getInitialLink();
-    if (initialLink != null) {
-      onDeepLink(initialLink.toString());
-    }
-
-    _appLinks?.uriLinkStream.listen((Uri? uri) {
-      debugPrint('onAppLink: $uri');
-      if (uri != null) {
-        onDeepLink(uri.toString());
-      }
-    });
   }
 
   Future<void> _initializeGeofencing(
