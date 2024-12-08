@@ -76,16 +76,28 @@
 
 ## Usage
 
-   ```dart
-   final menoti = Menoti();
+   Menoti has a class named ```Coordinate```, a list of this is to be created to be passed for geofencing locations.
+   this class has required params as id, name, latitude, longitude and radius.
 
-   await menoti.initialize(
-    onNotification: (RemoteMessage notificationData) {
-      print('Notification Data: $notificationData');
-    },
-    onGeofenceEvent: (regionId, entered) {
-      print('Geofence Event: $regionId, Entered: $entered');
-    },
-   );
+   It also has a class named ```MenotiNotification``` which contains the notification data 
+
+   Both classes are used in below code
+
+   ```dart
+      List<Coordinate> list = [
+         Coordinate("test1", "Royal Park", 18.5775513, 73.7660493, 300)
+      ];
+
+      final menoti = Menoti();
+      await menoti.initialize(
+      onDeepLink: (deepLink) => debugPrint('Deep Link: $deepLink'),
+      onNotification: (MenotiNotification notificationData) =>
+        debugPrint('Notification Data: ${notificationData.body}'),
+      onGeofenceEvent: (regionId, entered) =>
+        debugPrint('Geofence Event: $regionId, Entered: $entered'),
+      geofenceCoordinates: list,
+      onNotificationTap: (MenotiNotification notificationData) {
+        debugPrint("N-TAP");
+      });
    ```
 
