@@ -11,3 +11,5 @@ Major Release
 Notification Tap Added
 ## 1.0.2
 Documentation Updates
+## 1.0.3
+Documentation Updates

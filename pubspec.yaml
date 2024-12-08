@@ -1,6 +1,6 @@
 name: menoti
 description: "A Flutter package offering notification handling and geofencing. Manage notifications effectively and trigger actions based on precise geofence boundaries."
-version: 1.0.2
+version: 1.0.3
 homepage: "https://sanketkudale.github.io/"
 repository: "https://github.com/SanketKudale/Menoti"
 

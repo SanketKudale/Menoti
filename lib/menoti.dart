@@ -7,7 +7,6 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:location/location.dart';
 
-
 /// Menoti
 class Menoti {
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
@@ -45,14 +44,14 @@ class Menoti {
         _showLocalNotification(message: menotiNotification);
       }
     });
-    FirebaseMessaging.onBackgroundMessage((RemoteMessage message){
+    FirebaseMessaging.onBackgroundMessage((RemoteMessage message) {
       RemoteNotification remoteNotification = message.notification!;
-        MenotiNotification menotiNotification = MenotiNotification(
-            title: remoteNotification.title.toString(),
-            body: remoteNotification.body.toString(),
-            data: message.data);
-        onNotification(menotiNotification);
-        return Future.value();
+      MenotiNotification menotiNotification = MenotiNotification(
+          title: remoteNotification.title.toString(),
+          body: remoteNotification.body.toString(),
+          data: message.data);
+      onNotification(menotiNotification);
+      return Future.value();
     });
 
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
@@ -156,12 +155,16 @@ class Menoti {
 class Coordinate {
   /// ID of the Geofence.
   final String id;
+
   /// Name of the Geofence.
   final String name;
+
   /// Latitude of the Geofence center.
   final double latitude;
+
   /// Longitude of the Geofence center.
   final double longitude;
+
   /// Radius of Feofence
   final double radius;
 
@@ -173,8 +176,10 @@ class Coordinate {
 class MenotiNotification {
   /// Notification Title.
   final String title;
+
   /// Notification Body.
   final String body;
+
   /// Extra Data.
   final Map<String, dynamic> data;
 
