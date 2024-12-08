@@ -7,6 +7,8 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:location/location.dart';
 
+
+/// Menoti
 class Menoti {
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
   final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin =
@@ -14,6 +16,7 @@ class Menoti {
 
   final Location _location = Location();
 
+  /// Method to be called by package user
   Future<void> initialize(
       {required Function(String deepLink) onDeepLink,
       required Function(MenotiNotification notificationData) onNotification,
@@ -36,7 +39,7 @@ class Menoti {
         MenotiNotification menotiNotification = MenotiNotification(
             title: remoteNotification.title.toString(),
             body: remoteNotification.body.toString(),
-            data: message.data ?? {});
+            data: message.data);
 
         onNotification(menotiNotification);
         _showLocalNotification(message: menotiNotification);
@@ -47,7 +50,7 @@ class Menoti {
         MenotiNotification menotiNotification = MenotiNotification(
             title: remoteNotification.title.toString(),
             body: remoteNotification.body.toString(),
-            data: message.data ?? {});
+            data: message.data);
         onNotification(menotiNotification);
         return Future.value();
     });
@@ -58,7 +61,7 @@ class Menoti {
         MenotiNotification menotiNotification = MenotiNotification(
             title: remoteNotification.title.toString(),
             body: remoteNotification.body.toString(),
-            data: message.data ?? {});
+            data: message.data);
         onNotification(menotiNotification);
       }
     });
@@ -149,6 +152,7 @@ class Menoti {
   }
 }
 
+/// Geofence Coordinate Data Class
 class Coordinate {
   /// ID of the Geofence.
   final String id;
@@ -161,9 +165,11 @@ class Coordinate {
   /// Radius of Feofence
   final double radius;
 
+  /// Constructor
   Coordinate(this.id, this.name, this.latitude, this.longitude, this.radius);
 }
 
+/// Notification Data Class
 class MenotiNotification {
   /// Notification Title.
   final String title;
@@ -172,20 +178,23 @@ class MenotiNotification {
   /// Extra Data.
   final Map<String, dynamic> data;
 
+  /// Constructor
   const MenotiNotification(
       {required this.title, required this.body, this.data = const {}});
 
+  ///Method to convert Data Class to JSON String
   String toJsonString() {
     final jsonMap = {
       'title': title,
       'body': body,
       'data': data,
     };
-    return jsonEncode(jsonMap); // Convert map to JSON string
+    return jsonEncode(jsonMap);
   }
 
+  /// Method to convert String to Data Class
   factory MenotiNotification.fromJsonString(String jsonString) {
-    final jsonMap = jsonDecode(jsonString); // Convert JSON string to map
+    final jsonMap = jsonDecode(jsonString);
     return MenotiNotification(
       title: jsonMap['title'] as String,
       body: jsonMap['body'] as String,
