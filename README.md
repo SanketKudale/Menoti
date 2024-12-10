@@ -1,7 +1,16 @@
 ## Features
 
  - Notification Management
+   ```text
+      Set your functionality when Notification is received from FCM
+      Notifications are displayed when triggered from FCM
+      Notification tap can also be set
+   ```
  - Geofencing
+   ```text
+      Get the status of user if he is in your set location(s)
+      Trigger notifications based on user location
+   ```
 
 ## Getting started
 

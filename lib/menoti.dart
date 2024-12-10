@@ -7,8 +7,11 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:location/location.dart';
 
+
+
 /// Menoti
 class Menoti {
+  final Map<String, bool> _geofenceStates = {};
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
   final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
@@ -17,11 +20,11 @@ class Menoti {
 
   /// Method to be called by package user
   Future<void> initialize(
-      {required Function(String deepLink) onDeepLink,
-      required Function(MenotiNotification notificationData) onNotification,
+      {required Function(MenotiNotification notificationData) onNotification,
       required Function(MenotiNotification notificationData) onNotificationTap,
       required Function(String regionId, bool entered) onGeofenceEvent,
       required List<Coordinate> geofenceCoordinates}) async {
+    _geofenceStates.clear();
     await _initializeFirebaseMessaging(onNotification);
     await _initializeLocalNotifications(onNotificationTap);
     await _initializeGeofencing(geofenceCoordinates, onGeofenceEvent);
@@ -41,10 +44,10 @@ class Menoti {
             data: message.data);
 
         onNotification(menotiNotification);
-        _showLocalNotification(message: menotiNotification);
+        showLocalNotification(message: menotiNotification);
       }
     });
-    FirebaseMessaging.onBackgroundMessage((RemoteMessage message) {
+    /*FirebaseMessaging.onBackgroundMessage((RemoteMessage message) {
       RemoteNotification remoteNotification = message.notification!;
       MenotiNotification menotiNotification = MenotiNotification(
           title: remoteNotification.title.toString(),
@@ -52,7 +55,7 @@ class Menoti {
           data: message.data);
       onNotification(menotiNotification);
       return Future.value();
-    });
+    });*/
 
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
       RemoteNotification remoteNotification = message.notification!;
@@ -77,14 +80,11 @@ class Menoti {
         onDidReceiveNotificationResponse: (NotificationResponse response) {
       onNotificationTap(
           MenotiNotification.fromJsonString(response.payload.toString()));
-    }, onDidReceiveBackgroundNotificationResponse:
-            (NotificationResponse response) {
-      onNotificationTap(
-          MenotiNotification.fromJsonString(response.payload.toString()));
     });
   }
 
-  Future<void> _showLocalNotification(
+  ///Trigger Local Notification
+  Future<void> showLocalNotification(
       {required MenotiNotification message}) async {
     const androidDetails = AndroidNotificationDetails(
       'menoti_#825',
@@ -138,13 +138,13 @@ class Menoti {
         speed: 0,
         speedAccuracy: 0,
       );
-
       for (Coordinate coordinate in coordinates) {
-        if (_isWithinGeofence(currentPosition, coordinate.latitude,
-            coordinate.longitude, coordinate.radius)) {
-          onGeofenceEvent(coordinate.id, true);
-        } else {
-          onGeofenceEvent(coordinate.id, false);
+        bool isWithin = _isWithinGeofence(currentPosition, coordinate.latitude,
+            coordinate.longitude, coordinate.radius);
+        bool? previousState = _geofenceStates[coordinate.id];
+        if (previousState == null || previousState != isWithin) {
+          _geofenceStates[coordinate.id] = isWithin;
+          onGeofenceEvent(coordinate.id, isWithin);
         }
       }
     });

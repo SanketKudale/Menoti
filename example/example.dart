@@ -83,20 +83,22 @@ Future<void> initializeAsync() async {
   requestLocationPermissions();
 
   List<Coordinate> list = [
-    Coordinate("test1", "Royal Park", 18.5775513, 73.7660493, 300)
+    Coordinate("test1", "Royal Park", 18.577551, 73.768624, 200)
   ];
 
   await getToken();
   final menoti = Menoti();
   await menoti.initialize(
-      onDeepLink: (deepLink) => debugPrint('Deep Link: $deepLink'),
       onNotification: (MenotiNotification notificationData) =>
           debugPrint('Notification Data: ${notificationData.body}'),
-      onGeofenceEvent: (regionId, entered) =>
-          debugPrint('Geofence Event: $regionId, Entered: $entered'),
+      onGeofenceEvent: (regionId, entered) {
+        debugPrint('Geofence Event: $regionId, Entered: $entered');
+        //If needed you can trigger notification here
+        menoti.showLocalNotification(message: MenotiNotification(title: "title", body: "body"));
+      },
       geofenceCoordinates: list,
       onNotificationTap: (MenotiNotification notificationData) {
-        debugPrint("${notificationData.toJsonString()}");
+        debugPrint(notificationData.toJsonString());
       });
 }
 
