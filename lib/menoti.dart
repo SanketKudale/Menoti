@@ -7,8 +7,6 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:location/location.dart';
 
-
-
 /// Menoti
 class Menoti {
   final Map<String, bool> _geofenceStates = {};

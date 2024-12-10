@@ -94,7 +94,8 @@ Future<void> initializeAsync() async {
       onGeofenceEvent: (regionId, entered) {
         debugPrint('Geofence Event: $regionId, Entered: $entered');
         //If needed you can trigger notification here
-        menoti.showLocalNotification(message: MenotiNotification(title: "title", body: "body"));
+        menoti.showLocalNotification(
+            message: MenotiNotification(title: "title", body: "body"));
       },
       geofenceCoordinates: list,
       onNotificationTap: (MenotiNotification notificationData) {
