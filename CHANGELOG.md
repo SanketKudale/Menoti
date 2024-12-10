@@ -17,3 +17,5 @@ Documentation Updates
 Documentation Updates
 ## 1.0.5
 Geofence Event Triggered Once for Enter and Exit
+## 1.0.6
+Documentation Updates
